@@ -210,8 +210,8 @@ func (app *KitchenSink) handleImage(message *linebot.ImageMessage, replyToken st
 			return err
 		}
 
-		originalContentURL := app.appBaseURL + "/downloaded/" + filepath.Base(originalContent.Name())
-		previewImageURL := app.appBaseURL + "/downloaded/" + filepath.Base(previewImagePath)
+		originalContentURL := app.appBaseURL + "/downloaded/" + filepath.Base(originalContent.Name()) + ".jpeg"
+		previewImageURL := app.appBaseURL + "/downloaded/" + filepath.Base(previewImagePath) + ".jpeg"
 		if _, err := app.bot.ReplyMessage(
 			replyToken,
 			linebot.NewImageMessage(originalContentURL, previewImageURL),
@@ -232,8 +232,8 @@ func (app *KitchenSink) handleVideo(message *linebot.VideoMessage, replyToken st
 			return err
 		}
 
-		originalContentURL := app.appBaseURL + "/downloaded/" + filepath.Base(originalContent.Name())
-		previewImageURL := app.appBaseURL + "/downloaded/" + filepath.Base(previewImagePath)
+		originalContentURL := app.appBaseURL + "/downloaded/" + filepath.Base(originalContent.Name()) + ".mp4"
+		previewImageURL := app.appBaseURL + "/downloaded/" + filepath.Base(previewImagePath) + ".jpeg"
 		if _, err := app.bot.ReplyMessage(
 			replyToken,
 			linebot.NewVideoMessage(originalContentURL, previewImageURL),
