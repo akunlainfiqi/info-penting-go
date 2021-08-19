@@ -10,6 +10,8 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	"github.com/DisgoOrg/disgohook"
+	"github.com/DisgoOrg/disgohook/api"
 	"github.com/line/line-bot-sdk-go/v7/linebot"
 )
 
@@ -210,6 +212,22 @@ func (app *KitchenSink) handleImage(message *linebot.ImageMessage, replyToken st
 		}
 		originalContentURL := app.appBaseURL + "/downloaded/" + filepath.Base(originalContent.Name()) + ".jpeg"
 		previewImageURL := app.appBaseURL + "/downloaded/" + filepath.Base(previewImagePath) + ".jpeg"
+
+		webhook, err := disgohook.NewWebhookClientByToken(nil, nil, os.Getenv("WEBHOOK_TOKEN"))
+		if err != nil {
+			fmt.Printf("failed to create webhook: %s", err)
+			return err
+		}
+
+		reader, _ := os.Open(originalContentURL)
+		if _, err = webhook.SendMessage(api.NewWebhookMessageCreateBuilder().
+			SetContent("example message").
+			AddFile(originalContent.Name(), reader).
+			Build(),
+		); err != nil {
+			fmt.Printf("failed to send webhook message: %s", err)
+			return err
+		}
 		if _, err := app.bot.ReplyMessage(
 			replyToken,
 			linebot.NewImageMessage(originalContentURL, previewImageURL),
