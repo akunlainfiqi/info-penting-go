@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/exec"
 	"path/filepath"
 
 	"github.com/DisgoOrg/disgohook"
@@ -203,16 +202,6 @@ func (app *KitchenSink) handleText(message *linebot.TextMessage, replyToken stri
 
 func (app *KitchenSink) handleImage(message *linebot.ImageMessage, replyToken string) error {
 	return app.handleHeavyContent(message.ID, func(originalContent *os.File) error {
-		// You need to install ImageMagick.
-		// And you should consider about security and scalability.
-		previewImagePath := originalContent.Name() + "-preview"
-		_, err := exec.Command("convert", "-resize", "240x", "jpeg:"+originalContent.Name(), "jpeg:"+previewImagePath).Output()
-		if err != nil {
-			return err
-		}
-		originalContentURL := app.appBaseURL + "/downloaded/" + filepath.Base(originalContent.Name())
-		previewImageURL := app.appBaseURL + "/downloaded/" + filepath.Base(previewImagePath)
-
 		webhook, err := disgohook.NewWebhookClientByToken(nil, nil, os.Getenv("WEBHOOK_TOKEN"))
 		if err != nil {
 			fmt.Printf("failed to create webhook: %s", err)
@@ -226,32 +215,23 @@ func (app *KitchenSink) handleImage(message *linebot.ImageMessage, replyToken st
 			fmt.Printf("failed to send webhook message: %s \n", err)
 			return err
 		}
-		if _, err := app.bot.ReplyMessage(
-			replyToken,
-			linebot.NewImageMessage(originalContentURL, previewImageURL),
-		).Do(); err != nil {
-			return err
-		}
 		return nil
 	})
 }
 
 func (app *KitchenSink) handleVideo(message *linebot.VideoMessage, replyToken string) error {
 	return app.handleHeavyContent(message.ID, func(originalContent *os.File) error {
-		// You need to install FFmpeg and ImageMagick.
-		// And you should consider about security and scalability.
-		previewImagePath := originalContent.Name() + "-preview"
-		_, err := exec.Command("convert", "mp4:"+originalContent.Name()+"[0]", "jpeg:"+previewImagePath).Output()
+		webhook, err := disgohook.NewWebhookClientByToken(nil, nil, os.Getenv("WEBHOOK_TOKEN"))
 		if err != nil {
+			fmt.Printf("failed to create webhook: %s", err)
 			return err
 		}
-
-		originalContentURL := app.appBaseURL + "/downloaded/" + filepath.Base(originalContent.Name())
-		previewImageURL := app.appBaseURL + "/downloaded/" + filepath.Base(previewImagePath)
-		if _, err := app.bot.ReplyMessage(
-			replyToken,
-			linebot.NewVideoMessage(originalContentURL, previewImageURL),
-		).Do(); err != nil {
+		reader, _ := os.Open(originalContent.Name())
+		if _, err = webhook.SendMessage(api.NewWebhookMessageCreateBuilder().
+			AddFile("video.mp4", reader).
+			Build(),
+		); err != nil {
+			fmt.Printf("failed to send webhook message: %s \n", err)
 			return err
 		}
 		return nil
@@ -260,11 +240,17 @@ func (app *KitchenSink) handleVideo(message *linebot.VideoMessage, replyToken st
 
 func (app *KitchenSink) handleAudio(message *linebot.AudioMessage, replyToken string) error {
 	return app.handleHeavyContent(message.ID, func(originalContent *os.File) error {
-		originalContentURL := app.appBaseURL + "/downloaded/" + filepath.Base(originalContent.Name())
-		if _, err := app.bot.ReplyMessage(
-			replyToken,
-			linebot.NewAudioMessage(originalContentURL, 100),
-		).Do(); err != nil {
+		webhook, err := disgohook.NewWebhookClientByToken(nil, nil, os.Getenv("WEBHOOK_TOKEN"))
+		if err != nil {
+			fmt.Printf("failed to create webhook: %s", err)
+			return err
+		}
+		reader, _ := os.Open(originalContent.Name())
+		if _, err = webhook.SendMessage(api.NewWebhookMessageCreateBuilder().
+			AddFile("audio.m4a", reader).
+			Build(),
+		); err != nil {
+			fmt.Printf("failed to send webhook message: %s \n", err)
 			return err
 		}
 		return nil
@@ -272,7 +258,23 @@ func (app *KitchenSink) handleAudio(message *linebot.AudioMessage, replyToken st
 }
 
 func (app *KitchenSink) handleFile(message *linebot.FileMessage, replyToken string) error {
-	return app.replyText(replyToken, fmt.Sprintf("File `%s` (%d bytes) received.", message.FileName, message.FileSize))
+	return app.handleHeavyContent(message.ID, func(originalContent *os.File) error {
+		webhook, err := disgohook.NewWebhookClientByToken(nil, nil, os.Getenv("WEBHOOK_TOKEN"))
+		if err != nil {
+			fmt.Printf("failed to create webhook: %s", err)
+			return err
+		}
+		reader, _ := os.Open(originalContent.Name())
+		if _, err = webhook.SendMessage(api.NewWebhookMessageCreateBuilder().
+			AddFile(message.FileName, reader).
+			Build(),
+		); err != nil {
+			fmt.Printf("failed to send webhook message: %s \n", err)
+			return err
+		}
+		return nil
+	})
+	//return app.replyText(replyToken, fmt.Sprintf("File `%s` (%d bytes) received.", message.FileName, message.FileSize))
 }
 
 func (app *KitchenSink) handleLocation(message *linebot.LocationMessage, replyToken string) error {
