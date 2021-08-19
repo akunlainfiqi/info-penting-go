@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strconv"
+	"strings"
 
 	"github.com/DisgoOrg/disgohook"
 	"github.com/DisgoOrg/disgohook/api"
@@ -157,10 +157,10 @@ func (app *KitchenSink) handleText(message *linebot.TextMessage, replyToken stri
 		fmt.Printf("failed to create webhook: %s", err)
 		return err
 	}
-	a := message.Text
-	webhook.SendContent(a)
-	b := len(message.Text)
-	webhook.SendContent(strconv.Itoa(b))
+	a := strings.SplitAfterN(message.Text, ".", len(message.Text)/2000+1)
+	for _, value := range a {
+		webhook.SendContent(value)
+	}
 	return nil
 }
 
