@@ -158,11 +158,9 @@ func (app *KitchenSink) handleText(message *linebot.TextMessage, replyToken stri
 		return err
 	}
 	a := message.Text
+	webhook.SendContent(a)
 	b := len(message.Text) / 2000
-	if _, err := webhook.SendContent(a + strconv.FormatInt(10, b) + message.Text); err != nil {
-		fmt.Printf("failed to send webhook message: %s \n", err)
-		return err
-	}
+	webhook.SendContent(strconv.Itoa(b))
 	return nil
 }
 
