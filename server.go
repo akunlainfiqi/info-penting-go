@@ -29,7 +29,6 @@ func main() {
 	// serve /downloaded/** files
 	downloadedFileServer := http.FileServer(http.Dir(app.downloadDir))
 	http.HandleFunc("/downloaded/", http.StripPrefix("/downloaded/", downloadedFileServer).ServeHTTP)
-
 	http.HandleFunc("/callback", app.Callback)
 	// This is just a sample code.
 	// For actually use, you must support HTTPS by using `ListenAndServeTLS`, reverse proxy or etc.
@@ -209,7 +208,6 @@ func (app *KitchenSink) handleImage(message *linebot.ImageMessage, replyToken st
 		if err != nil {
 			return err
 		}
-
 		originalContentURL := app.appBaseURL + "/downloaded/" + filepath.Base(originalContent.Name())
 		previewImageURL := app.appBaseURL + "/downloaded/" + filepath.Base(previewImagePath)
 		if _, err := app.bot.ReplyMessage(
