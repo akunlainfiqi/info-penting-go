@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/DisgoOrg/disgohook"
 	"github.com/DisgoOrg/disgohook/api"
@@ -151,51 +152,16 @@ func (app *KitchenSink) Callback(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *KitchenSink) handleText(message *linebot.TextMessage, replyToken string, source *linebot.EventSource) error {
-	switch message.Text {
-	case "profile":
-		if source.UserID != "" {
-			profile, err := app.bot.GetProfile(source.UserID).Do()
-			if err != nil {
-				return app.replyText(replyToken, err.Error())
-			}
-			if _, err := app.bot.ReplyMessage(
-				replyToken,
-				linebot.NewTextMessage("User ID: "+profile.UserID),
-				linebot.NewTextMessage("Display name: "+profile.DisplayName),
-				linebot.NewTextMessage("Status message: "+profile.StatusMessage),
-			).Do(); err != nil {
-				return err
-			}
-		} else {
-			return app.replyText(replyToken, "Bot can't use profile API without user ID")
-		}
-	case "bye":
-		switch source.Type {
-		case linebot.EventSourceTypeUser:
-			return app.replyText(replyToken, "Bot can't leave from 1:1 chat")
-		case linebot.EventSourceTypeGroup:
-			if err := app.replyText(replyToken, "Leaving group"); err != nil {
-				return err
-			}
-			if _, err := app.bot.LeaveGroup(source.GroupID).Do(); err != nil {
-				return app.replyText(replyToken, err.Error())
-			}
-		case linebot.EventSourceTypeRoom:
-			if err := app.replyText(replyToken, "Leaving room"); err != nil {
-				return err
-			}
-			if _, err := app.bot.LeaveRoom(source.RoomID).Do(); err != nil {
-				return app.replyText(replyToken, err.Error())
-			}
-		}
-	default:
-		log.Printf("Echo message to %s: %s", replyToken, message.Text)
-		if _, err := app.bot.ReplyMessage(
-			replyToken,
-			linebot.NewTextMessage(message.Text),
-		).Do(); err != nil {
-			return err
-		}
+	webhook, err := disgohook.NewWebhookClientByToken(nil, nil, os.Getenv("WEBHOOK_TOKEN"))
+	if err != nil {
+		fmt.Printf("failed to create webhook: %s", err)
+		return err
+	}
+	a := message.Text
+	b := len(message.Text) / 2000
+	if _, err := webhook.SendContent(a + strconv.FormatInt(10, b) + message.Text); err != nil {
+		fmt.Printf("failed to send webhook message: %s \n", err)
+		return err
 	}
 	return nil
 }
@@ -278,20 +244,26 @@ func (app *KitchenSink) handleFile(message *linebot.FileMessage, replyToken stri
 }
 
 func (app *KitchenSink) handleLocation(message *linebot.LocationMessage, replyToken string) error {
-	if _, err := app.bot.ReplyMessage(
-		replyToken,
-		linebot.NewLocationMessage(message.Title, message.Address, message.Latitude, message.Longitude),
-	).Do(); err != nil {
+	webhook, err := disgohook.NewWebhookClientByToken(nil, nil, os.Getenv("WEBHOOK_TOKEN"))
+	if err != nil {
+		fmt.Printf("failed to create webhook: %s", err)
+		return err
+	}
+	if _, err := webhook.SendContent(message.Title + message.Address + fmt.Sprintf("%f", message.Latitude) + fmt.Sprintf("%f", message.Longitude)); err != nil {
+		fmt.Printf("failed to send webhook message: %s \n", err)
 		return err
 	}
 	return nil
 }
 
 func (app *KitchenSink) handleSticker(message *linebot.StickerMessage, replyToken string) error {
-	if _, err := app.bot.ReplyMessage(
-		replyToken,
-		linebot.NewStickerMessage(message.PackageID, message.StickerID),
-	).Do(); err != nil {
+	webhook, err := disgohook.NewWebhookClientByToken(nil, nil, os.Getenv("WEBHOOK_TOKEN"))
+	if err != nil {
+		fmt.Printf("failed to create webhook: %s", err)
+		return err
+	}
+	if _, err = webhook.SendContent(message.Keywords[0]); err != nil {
+		fmt.Printf("failed to send webhook message: %s \n", err)
 		return err
 	}
 	return nil
