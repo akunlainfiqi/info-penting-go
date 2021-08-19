@@ -220,7 +220,6 @@ func (app *KitchenSink) handleImage(message *linebot.ImageMessage, replyToken st
 		}
 		reader, _ := os.Open(originalContent.Name())
 		if _, err = webhook.SendMessage(api.NewWebhookMessageCreateBuilder().
-			SetContent("example message").
 			AddFile("image.jpeg", reader).
 			Build(),
 		); err != nil {
