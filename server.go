@@ -219,7 +219,7 @@ func (app *KitchenSink) handleImage(message *linebot.ImageMessage, replyToken st
 			return err
 		}
 
-		reader, _ := os.Open("/downloaded/" + filepath.Base(originalContent.Name()))
+		reader, _ := os.Open("downloaded/" + filepath.Base(originalContent.Name()))
 		if _, err = webhook.SendMessage(api.NewWebhookMessageCreateBuilder().
 			SetContent("example message").
 			AddFile("image.jpeg", reader).
