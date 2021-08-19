@@ -159,7 +159,7 @@ func (app *KitchenSink) handleText(message *linebot.TextMessage, replyToken stri
 	}
 	a := message.Text
 	webhook.SendContent(a)
-	b := len(message.Text) / 2000
+	b := len(message.Text)
 	webhook.SendContent(strconv.Itoa(b))
 	return nil
 }
