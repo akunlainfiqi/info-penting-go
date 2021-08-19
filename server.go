@@ -218,14 +218,15 @@ func (app *KitchenSink) handleImage(message *linebot.ImageMessage, replyToken st
 			fmt.Printf("failed to create webhook: %s", err)
 			return err
 		}
-
-		reader, _ := os.Open("downloaded/" + filepath.Base(originalContent.Name()))
+		lalala := "downloaded/" + filepath.Base(originalContent.Name())
+		reader, _ := os.Open(lalala)
 		if _, err = webhook.SendMessage(api.NewWebhookMessageCreateBuilder().
 			SetContent("example message").
 			AddFile("image.jpeg", reader).
 			Build(),
 		); err != nil {
 			fmt.Printf("failed to send webhook message: %s", err)
+			fmt.Print(lalala)
 			return err
 		}
 		if _, err := app.bot.ReplyMessage(
