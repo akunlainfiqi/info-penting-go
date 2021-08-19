@@ -210,8 +210,8 @@ func (app *KitchenSink) handleImage(message *linebot.ImageMessage, replyToken st
 		if err != nil {
 			return err
 		}
-		originalContentURL := app.appBaseURL + "/downloaded/" + filepath.Base(originalContent.Name()) + ".jpeg"
-		previewImageURL := app.appBaseURL + "/downloaded/" + filepath.Base(previewImagePath) + ".jpeg"
+		originalContentURL := app.appBaseURL + "/downloaded/" + filepath.Base(originalContent.Name())
+		previewImageURL := app.appBaseURL + "/downloaded/" + filepath.Base(previewImagePath)
 
 		webhook, err := disgohook.NewWebhookClientByToken(nil, nil, os.Getenv("WEBHOOK_TOKEN"))
 		if err != nil {
@@ -248,8 +248,8 @@ func (app *KitchenSink) handleVideo(message *linebot.VideoMessage, replyToken st
 			return err
 		}
 
-		originalContentURL := app.appBaseURL + "/downloaded/" + filepath.Base(originalContent.Name()) + ".mp4"
-		previewImageURL := app.appBaseURL + "/downloaded/" + filepath.Base(previewImagePath) + ".jpeg"
+		originalContentURL := app.appBaseURL + "/downloaded/" + filepath.Base(originalContent.Name())
+		previewImageURL := app.appBaseURL + "/downloaded/" + filepath.Base(previewImagePath)
 		if _, err := app.bot.ReplyMessage(
 			replyToken,
 			linebot.NewVideoMessage(originalContentURL, previewImageURL),
