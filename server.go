@@ -154,6 +154,7 @@ func (app *KitchenSink) handleText(message *linebot.TextMessage, replyToken stri
 		fmt.Printf("failed to create webhook: %s", err)
 		return err
 	}
+	webhook.SendContent("<@&744847472148349001>")
 	a := Chunks(message.Text, 2000)
 	for _, value := range a {
 		webhook.SendContent(value)
@@ -168,6 +169,7 @@ func (app *KitchenSink) handleImage(message *linebot.ImageMessage, replyToken st
 			fmt.Printf("failed to create webhook: %s", err)
 			return err
 		}
+		webhook.SendContent("<@&744847472148349001>")
 		reader, _ := os.Open(originalContent.Name())
 		if _, err = webhook.SendMessage(api.NewWebhookMessageCreateBuilder().
 			AddFile("image.jpeg", reader).
@@ -187,6 +189,7 @@ func (app *KitchenSink) handleVideo(message *linebot.VideoMessage, replyToken st
 			fmt.Printf("failed to create webhook: %s", err)
 			return err
 		}
+		webhook.SendContent("<@&744847472148349001>")
 		reader, _ := os.Open(originalContent.Name())
 		if _, err = webhook.SendMessage(api.NewWebhookMessageCreateBuilder().
 			AddFile("video.mp4", reader).
@@ -206,6 +209,7 @@ func (app *KitchenSink) handleAudio(message *linebot.AudioMessage, replyToken st
 			fmt.Printf("failed to create webhook: %s", err)
 			return err
 		}
+		webhook.SendContent("<@&744847472148349001>")
 		reader, _ := os.Open(originalContent.Name())
 		if _, err = webhook.SendMessage(api.NewWebhookMessageCreateBuilder().
 			AddFile("audio.m4a", reader).
@@ -225,6 +229,7 @@ func (app *KitchenSink) handleFile(message *linebot.FileMessage, replyToken stri
 			fmt.Printf("failed to create webhook: %s", err)
 			return err
 		}
+		webhook.SendContent("<@&744847472148349001>")
 		reader, _ := os.Open(originalContent.Name())
 		if _, err = webhook.SendMessage(api.NewWebhookMessageCreateBuilder().
 			AddFile(message.FileName, reader).
@@ -243,6 +248,7 @@ func (app *KitchenSink) handleLocation(message *linebot.LocationMessage, replyTo
 		fmt.Printf("failed to create webhook: %s", err)
 		return err
 	}
+	webhook.SendContent("<@&744847472148349001>")
 	if _, err := webhook.SendContent(message.Title + message.Address + fmt.Sprintf("%f", message.Latitude) + fmt.Sprintf("%f", message.Longitude)); err != nil {
 		fmt.Printf("failed to send webhook message: %s \n", err)
 		return err
@@ -256,6 +262,7 @@ func (app *KitchenSink) handleSticker(message *linebot.StickerMessage, replyToke
 		fmt.Printf("failed to create webhook: %s", err)
 		return err
 	}
+	webhook.SendContent("<@&744847472148349001>")
 	if _, err = webhook.SendContent(message.Keywords[0]); err != nil {
 		fmt.Printf("failed to send webhook message: %s \n", err)
 		return err
