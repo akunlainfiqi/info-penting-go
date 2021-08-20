@@ -154,16 +154,7 @@ func (app *KitchenSink) handleText(message *linebot.TextMessage, replyToken stri
 		fmt.Printf("failed to create webhook: %s", err)
 		return err
 	}
-
-	if source.UserID != "" {
-		profile, err := app.bot.GetProfile(source.UserID).Do()
-		if err != nil {
-			return err
-		}
-		webhook.SendContent("<@&744847472148349001> ada info penting nih dari " + profile.DisplayName)
-	} else {
-		webhook.SendContent("<@&744847472148349001> ada info penting nih dari ")
-	}
+	webhook.SendContent("<@&744847472148349001>")
 	a := Chunks(message.Text, 2000)
 	for _, value := range a {
 		webhook.SendContent(value)
