@@ -86,66 +86,44 @@ func (app *KitchenSink) Callback(w http.ResponseWriter, r *http.Request) {
 	}
 	for _, event := range events {
 		log.Printf("Got event %v", event)
-		switch event.Type {
-		case linebot.EventTypeMessage:
-			switch message := event.Message.(type) {
-			case *linebot.TextMessage:
-				if err := app.handleText(message, event.ReplyToken, event.Source); err != nil {
-					log.Print(err)
-				}
-			case *linebot.ImageMessage:
-				if err := app.handleImage(message, event.ReplyToken); err != nil {
-					log.Print(err)
-				}
-			case *linebot.VideoMessage:
-				if err := app.handleVideo(message, event.ReplyToken); err != nil {
-					log.Print(err)
-				}
-			case *linebot.AudioMessage:
-				if err := app.handleAudio(message, event.ReplyToken); err != nil {
-					log.Print(err)
-				}
-			case *linebot.FileMessage:
-				if err := app.handleFile(message, event.ReplyToken); err != nil {
-					log.Print(err)
-				}
-			case *linebot.LocationMessage:
-				if err := app.handleLocation(message, event.ReplyToken); err != nil {
-					log.Print(err)
-				}
-			case *linebot.StickerMessage:
-				if err := app.handleSticker(message, event.ReplyToken); err != nil {
-					log.Print(err)
+		if a := event.Source.Type; a == "group" {
+			switch event.Type {
+			case linebot.EventTypeMessage:
+				switch message := event.Message.(type) {
+				case *linebot.TextMessage:
+					if err := app.handleText(message, event.ReplyToken, event.Source); err != nil {
+						log.Print(err)
+					}
+				case *linebot.ImageMessage:
+					if err := app.handleImage(message, event.ReplyToken); err != nil {
+						log.Print(err)
+					}
+				case *linebot.VideoMessage:
+					if err := app.handleVideo(message, event.ReplyToken); err != nil {
+						log.Print(err)
+					}
+				case *linebot.AudioMessage:
+					if err := app.handleAudio(message, event.ReplyToken); err != nil {
+						log.Print(err)
+					}
+				case *linebot.FileMessage:
+					if err := app.handleFile(message, event.ReplyToken); err != nil {
+						log.Print(err)
+					}
+				case *linebot.LocationMessage:
+					if err := app.handleLocation(message, event.ReplyToken); err != nil {
+						log.Print(err)
+					}
+				case *linebot.StickerMessage:
+					if err := app.handleSticker(message, event.ReplyToken); err != nil {
+						log.Print(err)
+					}
+				default:
+					log.Printf("Unknown message: %v", message)
 				}
 			default:
-				log.Printf("Unknown message: %v", message)
+				log.Printf("event: %v", event)
 			}
-		case linebot.EventTypeFollow:
-			if err := app.replyText(event.ReplyToken, "Got followed event"); err != nil {
-				log.Print(err)
-			}
-		case linebot.EventTypeUnfollow:
-			log.Printf("Unfollowed this bot: %v", event)
-		case linebot.EventTypeJoin:
-			if err := app.replyText(event.ReplyToken, "Joined "+string(event.Source.Type)); err != nil {
-				log.Print(err)
-			}
-		case linebot.EventTypeLeave:
-			log.Printf("Left: %v", event)
-		case linebot.EventTypePostback:
-			data := event.Postback.Data
-			if data == "DATE" || data == "TIME" || data == "DATETIME" {
-				data += fmt.Sprintf("(%v)", *event.Postback.Params)
-			}
-			if err := app.replyText(event.ReplyToken, "Got postback: "+data); err != nil {
-				log.Print(err)
-			}
-		case linebot.EventTypeBeacon:
-			if err := app.replyText(event.ReplyToken, "Got beacon: "+event.Beacon.Hwid); err != nil {
-				log.Print(err)
-			}
-		default:
-			log.Printf("Unknown event: %v", event)
 		}
 	}
 }
@@ -257,7 +235,6 @@ func (app *KitchenSink) handleFile(message *linebot.FileMessage, replyToken stri
 		}
 		return nil
 	})
-	//return app.replyText(replyToken, fmt.Sprintf("File `%s` (%d bytes) received.", message.FileName, message.FileSize))
 }
 
 func (app *KitchenSink) handleLocation(message *linebot.LocationMessage, replyToken string) error {
@@ -281,16 +258,6 @@ func (app *KitchenSink) handleSticker(message *linebot.StickerMessage, replyToke
 	}
 	if _, err = webhook.SendContent(message.Keywords[0]); err != nil {
 		fmt.Printf("failed to send webhook message: %s \n", err)
-		return err
-	}
-	return nil
-}
-
-func (app *KitchenSink) replyText(replyToken, text string) error {
-	if _, err := app.bot.ReplyMessage(
-		replyToken,
-		linebot.NewTextMessage(text),
-	).Do(); err != nil {
 		return err
 	}
 	return nil
