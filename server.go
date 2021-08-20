@@ -86,7 +86,7 @@ func (app *KitchenSink) Callback(w http.ResponseWriter, r *http.Request) {
 	}
 	for _, event := range events {
 		log.Printf("Got event %v", event)
-		if a := event.Source.Type; a == "group" {
+		if a := event.Source.GroupID; a == os.Getenv("GROUP_ID") {
 			switch event.Type {
 			case linebot.EventTypeMessage:
 				switch message := event.Message.(type) {
