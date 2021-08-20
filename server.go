@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/DisgoOrg/disgohook"
 	"github.com/DisgoOrg/disgohook/api"
@@ -150,14 +149,34 @@ func (app *KitchenSink) Callback(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 }
-
+func Chunks(s string, chunkSize int) []string {
+	if len(s) == 0 {
+		return nil
+	}
+	if chunkSize >= len(s) {
+		return []string{s}
+	}
+	var chunks []string = make([]string, 0, (len(s)-1)/chunkSize+1)
+	currentLen := 0
+	currentStart := 0
+	for i := range s {
+		if currentLen == chunkSize {
+			chunks = append(chunks, s[currentStart:i])
+			currentLen = 0
+			currentStart = i
+		}
+		currentLen++
+	}
+	chunks = append(chunks, s[currentStart:])
+	return chunks
+}
 func (app *KitchenSink) handleText(message *linebot.TextMessage, replyToken string, source *linebot.EventSource) error {
 	webhook, err := disgohook.NewWebhookClientByToken(nil, nil, os.Getenv("WEBHOOK_TOKEN"))
 	if err != nil {
 		fmt.Printf("failed to create webhook: %s", err)
 		return err
 	}
-	a := strings.SplitAfterN(message.Text, ".", len(message.Text)/2000+1)
+	a := Chunks(message.Text, 2000)
 	for _, value := range a {
 		webhook.SendContent(value)
 	}
